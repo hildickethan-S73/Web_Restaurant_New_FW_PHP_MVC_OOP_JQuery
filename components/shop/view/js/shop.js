@@ -14,9 +14,9 @@ $(document).ready(function(){
         restaurantSearch();
     }
 
-    // if (getCurrentPage() == 'details'){
-    //     loadRestaurant();
-    // }
+    if (getCurrentPage() == 'details'){
+        loadRestaurant();
+    }
 
     ////////////////////////////////////////////////
     // onclick
@@ -34,6 +34,19 @@ $(document).ready(function(){
         removeChildren(document.getElementById('dropdown-name'));
         removeChildren(document.getElementById('dropdown-tastes'));
     });
+
+    // $('#searchbutton_home').on('click', function(){
+    //     var searchdata = getSearchdata();
+        
+    //     $.ajax({
+    //         data: searchdata,
+    //         url: 'api/shop/savesearch-true',
+    //         type: 'POST',
+    //         success: function(){
+    //             window.location.href='shop';
+    //         }
+    //     });
+    // });
 
         ////////////////////////////////////////////////
         // Keyup / Autocomplete
@@ -83,51 +96,54 @@ $(document).ready(function(){
         return(vars[2]);
     }
 
-    function paintPage(r,restaurant){
+    function paintPage(r,restaurant, api = false){
         var template = "";
-        var i = 1;
-
+        
         r = document.createElement("div");
         r.classList.add("col-md-4","feature");
 
-        template = 
-            `<img src="view/img/restaurant${i}.jpg" alt="#">
-            <h4>${restaurant.name}</h4>
-            <a type="button" class="site-btn sb-c3">+</a>`;
+        if (api){
+            template = 
+            `<img src='${restaurant.image_url}' alt='No image available'>
+            <h4>${restaurant.name}</h4>`;
+        } else {
+            var imgs = [1,2,3];
+            var i = imgs[Math.floor(Math.random()*imgs.length)];
+            template = 
+                `<img src="view/img/restaurant${i}.jpg" alt="#">
+                <h4>${restaurant.name}</h4>
+                <a type="button" class="site-btn sb-c3">+</a>`;
+        }
 
-        if (i >= 3)
-            i = 1;
-        else 
-            i++;
 
         r.innerHTML = template;
         return r;
     }
 
-    function addListeners(r,restaurant){
+    function addListeners(r,restaurant,api = false){
         r.childNodes[0].addEventListener("click", function(){
             addDetails(restaurant);
         });
-        r.childNodes[4].addEventListener('click', function(){
-            addCart(restaurant);
-        });
+        if (!api){
+            r.childNodes[4].addEventListener('click', function(){
+                addCart(restaurant);
+            });
+        }
         return r;
     }
 
     function addDetails(post){
-        console.log('details');
-        // window.location.href ="shop/details";
-        // $.ajax({
-        //     data: post,
-        //     url: "components/shop/model/shop.php",
-        //     type: 'POST',
-        //     success: function(data){
-        //         // console.log(data);
-        //         window.location.href ="shop/details";
-        //     }
-        // });
+        $.ajax({
+            data: post,
+            url: 'api/shop/savedetails-true',
+            type: 'POST',
+            success: function(){
+                window.location.href ="details";
+            }
+        });
     }
 
+    //todo
     function addCart(restaurant){
         console.log('cart');
     /*if (localStorage && localStorage.getItem('cart')) {
@@ -188,12 +204,7 @@ $(document).ready(function(){
 
     function restaurantSearch(){
         
-        var searchdata = {
-            "type": type,
-            "tastes": document.getElementById('searchtastes').value,
-            "name": document.getElementById('searchname').value
-        };
-
+        var searchdata = getSearchdata();
         var url = buildURL(searchdata,0);
 
         $.ajax({
@@ -217,71 +228,45 @@ $(document).ready(function(){
         // API
         ////////////////////////////////////////////////
 
-        // var api_promise = new Promise(function(resolve, reject) {
-        //     var json = null;
-        //     $.ajax({
-        //         type: 'GET',
-        //         url: "model/token.json",
-        //         dataType: 'JSON',
-        //         success: function (data) {
-        //             json = data;
-        //         }
-        //     });
-        //     setTimeout(function() {
-        //     resolve(json);
-        //     }, 200);
-        // });
+        var api_promise = new Promise(function(resolve, reject) {
+            var json = null;
+            $.ajax({
+                type: 'GET',
+                url: "model/token.json",
+                dataType: 'JSON',
+                success: function (data) {
+                    json = data;
+                }
+            });
+            setTimeout(function() {
+            resolve(json);
+            }, 200);
+        });
         
-        // api_promise.then(function(tokens) {
-        //     // console.log(value);
-        //     $.ajax({
-        //         type: 'GET',
-        //         url: 'https://cors-anywhere.herokuapp.com/https://api.yelp.com/v3/businesses/search?location=valenciancommunity&categories=restaurants&limit=10',
-        //         headers: {
-        //             'Authorization':`Bearer ${tokens.keys.yelp_api}`,
-        //         },
-        //         dataType: 'JSON',
-        //         success: function(data) {
-        //             // console.log(data);
-
-        //             $.each(data.businesses, function(index, restaurant){
+        api_promise.then(function(tokens) {
+            // console.log(value);
+            $.ajax({
+                type: 'GET',
+                url: 'https://cors-anywhere.herokuapp.com/https://api.yelp.com/v3/businesses/search?location=valenciancommunity&categories=restaurants&limit=10',
+                headers: {
+                    'Authorization':`Bearer ${tokens.keys.yelp_api}`,
+                },
+                dataType: 'JSON',
+                success: function(data) {
+                    $.each(data.businesses, function(index, restaurant){
+                        var r;
+                        r = paintPage(r,restaurant,true);
+                        r = addListeners(r,restaurant,true);
                         
-        //                 var r = document.createElement("div");
-        //                 r.classList.add("col-md-4","feature");
-                        
-        //                 var temp = 
-        //                     `<img src='${data.businesses[index].image_url}' alt='No image available'>`+
-        //                     `<h4>${data.businesses[index].name}</h4>`;
-                    
-
-        //                 r.innerHTML = (temp);
-                        
-        //                 r.addEventListener("click", function(){
-        //                     var details = data.businesses[index];
-                            
-        //                     $.ajax({
-        //                         data: details,
-        //                         url: "components/shop/controller/controller_shop.php?op=redirectdetails",
-        //                         type: 'POST',
-        //                         success: function(data){
-        //                             data = JSON.parse(data);
-        //                             // console.log(data);
-                                    
-        //                             window.location.href ="index.php?page=controller_shop&op=details";
-        //                         }
-        //                     });
-        //                 });
-                        
-        //                 $('#restaurantsshop').append(r);
-        //             });
-        //         },
-        //         error: function(e) {
-        //             console.log('ERROR '+e.status);
-        //             console.log(e.responseText);
-        //         }
-        //     });
-        // });
-
+                        $('#restaurantsshop').append(r);
+                    });
+                },
+                error: function(e) {
+                    console.log('ERROR '+e.status);
+                    console.log(e.responseText);
+                }
+            });
+        });
     }
 
     function removeChildren(inputbox){
@@ -313,4 +298,55 @@ $(document).ready(function(){
         });
     }
 
+    function fillDetails(data){
+        $.each(data, function (field, value) {
+            if (field == 'detailsimg')
+                document.getElementById(field).setAttribute('src', value)
+            else if (value.startsWith('<'))
+                document.getElementById(field).innerHTML = value;
+            else 
+                document.getElementById(field).textContent = value;
+        });
+    }
+    
+    function loadRestaurant(){
+        // get clicked restaurant
+        $.ajax({
+            url: 'api/shop/details-true',
+            type: 'GET',
+            success: function(data){
+                data = JSON.parse(data);
+
+                // bandaid fix for DB vs API restaurants, unstable
+                var obj;
+                if (data.id.length < 5) {
+                    obj = {
+                        'detailsname':data.name,
+                        'details1':`Type: ${data.type}`,
+                        'details2':`People: ${data.people}`,
+                        'details3':`Date: ${data.selected_date}`,
+                        'details4':`Tastes: ${data.tastes}`
+                    }
+                } else {
+                    obj = {
+                        'detailsimg':data.image_url,
+                        'detailsname':data.name,
+                        'details1':`Location: ${data.location.display_address.toString()}`,
+                        'details2':`Phone: ${data.display_phone}`,
+                        'details3':`Rating: ${data.rating}`,
+                        'details4':`<a href=${data.url}>Restaurant on Yelp</a>`
+                    }
+                }
+                fillDetails(obj);
+            }
+        });
+    }
+
+    function getSearchdata(){
+        return {
+            "type": type,
+            "tastes": document.getElementById('searchtastes').value,
+            "name": document.getElementById('searchname').value
+        };
+    }
 });

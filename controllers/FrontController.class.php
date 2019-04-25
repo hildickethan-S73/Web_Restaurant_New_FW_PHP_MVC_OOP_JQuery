@@ -11,7 +11,6 @@ class FrontController {
     public function FrontController(){
         $this->uri=$_SERVER['REQUEST_URI'];
         $this->uri=str_replace('/new_framework_github/',"",$this->uri);
-        // error_log(print_r($this,1));
 
         $this->run();
     }
@@ -21,9 +20,18 @@ class FrontController {
             'home',
             'restaurants',
             'contact',
-            'shop'
+            'shop',
+            'details'
         );
         return $allowedPages;
+    }
+    
+    private function loadFiles($module,$folder,$filename,$extension){
+        if (file_exists(COMPONENTS_PATH.$module.$folder.$filename.$extension)) {
+            include_once COMPONENTS_PATH.$module.$folder.$filename.$extension;
+        } else {
+            include_once MODULES_PATH.$module.$folder.$filename.$extension;
+        }
     }
 
     public function run(){
@@ -39,12 +47,7 @@ class FrontController {
                     $params = explode('-',$getParam);
                     $_GET[$params[0]]=$params[1];
                 }
-                // components 
-                if (file_exists(COMPONENTS_PATH.$cutUrl[1].'/model/'.$cutUrl[1].'.php')) {
-                    include_once COMPONENTS_PATH.$cutUrl[1].'/model/'.$cutUrl[1].'.php';
-                } else {
-                    include_once MODULES_PATH.$cutUrl[1].'/model/'.$cutUrl[1].'.php';
-                }
+                $this->loadFiles($cutUrl[1],'/model/',$cutUrl[1],'.php');
             } else {
                 header('HTTP/1.0 404 Not found');
             }
@@ -53,11 +56,10 @@ class FrontController {
             include_once VIEW_PATH_INC . 'header.html';
 
             if (in_array($this->uri,$allowedPages)){
-                // components 
-                if (file_exists(COMPONENTS_PATH.$this->uri.'/view/'.$this->uri.'.html')) {
-                    include_once COMPONENTS_PATH.$this->uri.'/view/'.$this->uri.'.html';
+                if ($cutUrl[0] == 'details'){
+                    $this->loadFiles('shop','/view/',$cutUrl[0],'.html');
                 } else {
-                    include_once MODULES_PATH . $this->uri.'/view/'.$this->uri.".html";
+                    $this->loadFiles($cutUrl[0],'/view/',$cutUrl[0],'.html');
                 }
             } else if($this->uri==""||$this->uri=="/"){
                 include_once MODULES_PATH . "home/view/home.html";

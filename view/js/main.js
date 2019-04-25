@@ -29,6 +29,8 @@
 		$('.main-menu li').removeClass('active');
 		if(!page){
 			$('#home').addClass('active');
+		} else if (page == 'details') {
+			$('#shop').addClass('active');
 		} else {
 			$('#'+page).addClass('active');
 		}
