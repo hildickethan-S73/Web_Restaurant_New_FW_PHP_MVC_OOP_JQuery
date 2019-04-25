@@ -17,6 +17,9 @@ $(document).ready(function () {
                 i++;
 
             r.innerHTML = template;
+            // r.childNodes[0].addEventListener("click", function(){
+            //     console.log(data);
+            // });
             $('#homerestaurants').append(r);
         });
     }

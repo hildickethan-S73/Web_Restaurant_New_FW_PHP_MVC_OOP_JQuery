@@ -28,4 +28,16 @@ function loadClasses($className){
         // error_log(print_r($className.' m loaded',1));
         include_once MODULES_PATH.strtolower($className).'/model/'.strtolower($className).'.class.php';
     }
+
+    // components controller
+    if (file_exists(COMPONENTS_PATH.strtolower($className).'/controller/'.strtolower($className).'.class.php')) {
+        // error_log(print_r($className.' c loaded',1));
+        include_once COMPONENTS_PATH.strtolower($className).'/controller/'.strtolower($className).'.class.php';
+    }
+
+    // components model
+    if (file_exists(COMPONENTS_PATH.strtolower($className).'/model/'.strtolower($className).'.class.php')) {
+        // error_log(print_r($className.' m loaded',1));
+        include_once COMPONENTS_PATH.strtolower($className).'/model/'.strtolower($className).'.class.php';
+    }
 }
