@@ -4,6 +4,7 @@ class ControllerCore{
         $conditions=count($array);
         $query='';
         $limit='';
+        $orderby='';
         if ($conditions>=1){
             $query = " WHERE ";
         }
@@ -18,7 +19,7 @@ class ControllerCore{
                 $limit = $this->addLimitStatement($value);
                 $conditions--;
             } else if ($row=='orderby'){
-                $query = $this->addOrderByStatement($value);
+                $orderby = $this->addOrderByStatement($value);
                 $conditions--;
             } else if ($row=='count'){
                 $conditions--;
@@ -35,7 +36,7 @@ class ControllerCore{
             return $limit;
         }
         // error_log(print_r($query.$limit,1));
-        return $query.$limit;
+        return $query.$orderby.$limit;
     }
     
     private function addLimitStatement($limit){

@@ -35,18 +35,17 @@ $(document).ready(function(){
         removeChildren(document.getElementById('dropdown-tastes'));
     });
 
-    // $('#searchbutton_home').on('click', function(){
-    //     var searchdata = getSearchdata();
-        
-    //     $.ajax({
-    //         data: searchdata,
-    //         url: 'api/shop/savesearch-true',
-    //         type: 'POST',
-    //         success: function(){
-    //             window.location.href='shop';
-    //         }
-    //     });
-    // });
+    $('#searchbutton_home').on('click', function(){
+        var searchdata = getSearchdata();
+        $.ajax({
+            data: searchdata,
+            url: 'api/shop/savesearch-true',
+            type: 'POST',
+            success: function(){
+                window.location.href='shop';
+            }
+        });
+    });
 
         ////////////////////////////////////////////////
         // Keyup / Autocomplete
@@ -96,16 +95,37 @@ $(document).ready(function(){
         return(vars[2]);
     }
 
-    function paintPage(r,restaurant, api = false){
+    function removePage(){
+        $('#restaurantsshop').html('');
+    }
+
+    function getPage(start,searchdata){
+        var url = buildURL(searchdata,3,start);
+        $.ajax({
+            url: url,
+            type: 'GET',
+            success: function(data){
+                data = JSON.parse(data);
+                $.each(data, function(index, restaurant){
+                    paintPage(restaurant);
+                });
+            }
+        });
+    }
+
+    function paintPage(restaurant, api = false){
         var template = "";
         
-        r = document.createElement("div");
+        var r = document.createElement("div");
         r.classList.add("col-md-4","feature");
 
         if (api){
             template = 
             `<img src='${restaurant.image_url}' alt='No image available'>
             <h4>${restaurant.name}</h4>`;
+            r.innerHTML = template;
+            addListeners(r,restaurant,true)
+            $('#restaurantsshopapi').append(r);
         } else {
             var imgs = [1,2,3];
             var i = imgs[Math.floor(Math.random()*imgs.length)];
@@ -113,11 +133,10 @@ $(document).ready(function(){
                 `<img src="view/img/restaurant${i}.jpg" alt="#">
                 <h4>${restaurant.name}</h4>
                 <a type="button" class="site-btn sb-c3">+</a>`;
+            r.innerHTML = template;
+            addListeners(r,restaurant);
+            $('#restaurantsshop').append(r);
         }
-
-
-        r.innerHTML = template;
-        return r;
     }
 
     function addListeners(r,restaurant,api = false){
@@ -179,7 +198,15 @@ $(document).ready(function(){
     $('#cart-number').html(cart.restaurants.length);*/
     }
 
-    function buildURL(array,num){
+    function appendWheres(array,url){
+        $.each(array, function (field, value) {
+            if (value != "" && value != 'Type')
+                url += `${field}-${value}/`;
+        });
+        return url
+    }
+
+    function buildURL(array,num, start = false){
         var url = 'api/restaurants/';
         switch (num) {
             case 0:
@@ -195,6 +222,21 @@ $(document).ready(function(){
                 if (array['type'] != "Type")
                     url += `type-${array['type']}/`;
                 break;
+            
+            case 2:
+                url += 'count-1/';
+                $.each(array, function (field, value) {
+                    if (value != "" && value != 'Type')
+                        url += `${field}-${value}/`;
+                });
+                break;
+            case 3:
+                url += `limit-${start},3/orderby-id/`;
+                $.each(array, function (field, value) {
+                    if (value != "" && value != 'Type')
+                        url += `${field}-${value}/`;
+                });
+                break;
         
             default:
                 break;
@@ -203,23 +245,40 @@ $(document).ready(function(){
     }
 
     function restaurantSearch(){
-        
-        var searchdata = getSearchdata();
-        var url = buildURL(searchdata,0);
-
         $.ajax({
+            url: 'api/shop/getsearch-true',
             type: 'GET',
-            url: url,
-            success: function(data) {
-                data = JSON.parse(data);
-                document.getElementById('restaurantsshop').innerHTML="";
+            success: function(data){
+                var searchdata;
+                if (data){
+                    data = JSON.parse(data);
+                    searchdata = data;
+                } else {
+                    searchdata = getSearchdata();
+                }
+                var url = buildURL(searchdata,2);
 
-                var r;
-                $.each(data, function(index, restaurant){
-                    r = paintPage(r,restaurant);
-                    r = addListeners(r,restaurant);
-                    
-                    $('#restaurantsshop').append(r);
+                $.ajax({
+                    url: url,
+                    type: 'GET',
+                    success: function(data){
+                        data = JSON.parse(data);
+                        var total_pages = Math.ceil(data[0].rowcount/3);
+                        removePage();
+                        getPage(0,searchdata);
+                        $("#paginationshop").off("page");
+                        $("#paginationshop").bootpag({
+                            total: total_pages,
+                            page: 1,
+                            maxVisible: 3,
+                            next: 'next',
+                            prev: 'prev'
+                        }).on("page", function (event, page) {
+                            var start = (page-1)*3;
+                            removePage();
+                            getPage(start,searchdata);
+                        });
+                    }
                 });
             }
         });
@@ -227,7 +286,7 @@ $(document).ready(function(){
         ////////////////////////////////////////////////
         // API
         ////////////////////////////////////////////////
-
+        $('#restaurantsshopapi').html('');
         var api_promise = new Promise(function(resolve, reject) {
             var json = null;
             $.ajax({
@@ -254,11 +313,7 @@ $(document).ready(function(){
                 dataType: 'JSON',
                 success: function(data) {
                     $.each(data.businesses, function(index, restaurant){
-                        var r;
-                        r = paintPage(r,restaurant,true);
-                        r = addListeners(r,restaurant,true);
-                        
-                        $('#restaurantsshop').append(r);
+                        paintPage(restaurant,true);
                     });
                 },
                 error: function(e) {
