@@ -64,7 +64,7 @@ $(document).ready(function(){
         removeChildren(inputbox);
 
         if (fielddata.name != ""){
-            var url = buildURL(fielddata,1);
+            var url = buildURL(fielddata,'autocomplete');
             $.ajax({
                 type: 'GET',
                 url: url,
@@ -100,7 +100,7 @@ $(document).ready(function(){
     }
 
     function getPage(start,searchdata){
-        var url = buildURL(searchdata,3,start);
+        var url = buildURL(searchdata,'page',start);
         $.ajax({
             url: url,
             type: 'GET',
@@ -203,39 +203,26 @@ $(document).ready(function(){
             if (value != "" && value != 'Type')
                 url += `${field}-${value}/`;
         });
-        return url
+        return url;
     }
 
     function buildURL(array,num, start = false){
         var url = 'api/restaurants/';
         switch (num) {
-            case 0:
-                $.each(array, function (field, value) {
-                    if (value != "" && value != 'Type')
-                        url += `${field}-${value}/`;
-                });
-                break;
-
-            case 1:
+            case 'autocomplete':
                 url += 'limit-6/';
                 url += `${array['field']}-!${array['name']}!/`;
                 if (array['type'] != "Type")
                     url += `type-${array['type']}/`;
                 break;
             
-            case 2:
+            case 'count':
                 url += 'count-1/';
-                $.each(array, function (field, value) {
-                    if (value != "" && value != 'Type')
-                        url += `${field}-${value}/`;
-                });
+                url = appendWheres(array,url);
                 break;
-            case 3:
+            case 'page':
                 url += `limit-${start},3/orderby-id/`;
-                $.each(array, function (field, value) {
-                    if (value != "" && value != 'Type')
-                        url += `${field}-${value}/`;
-                });
+                url = appendWheres(array,url);
                 break;
         
             default:
@@ -256,7 +243,7 @@ $(document).ready(function(){
                 } else {
                     searchdata = getSearchdata();
                 }
-                var url = buildURL(searchdata,2);
+                var url = buildURL(searchdata,'count');
 
                 $.ajax({
                     url: url,

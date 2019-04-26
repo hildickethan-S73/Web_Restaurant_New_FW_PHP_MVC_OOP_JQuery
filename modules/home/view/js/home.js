@@ -1,4 +1,15 @@
 $(document).ready(function () {
+    function addDetails(post){
+        $.ajax({
+            data: post,
+            url: 'api/shop/savedetails-true',
+            type: 'POST',
+            success: function(){
+                window.location.href ="details";
+            }
+        });
+    }
+
     function paintPage(data){
         var template = "";
         var i = 1;
@@ -17,13 +28,13 @@ $(document).ready(function () {
                 i++;
 
             r.innerHTML = template;
-            // r.childNodes[0].addEventListener("click", function(){
-            //     console.log(data);
-            // });
+            r.childNodes[0].addEventListener("click", function(){
+                addDetails(restaurant);
+            });
             $('#homerestaurants').append(r);
         });
     }
-
+    
     function removePage(){
         $('#homerestaurants').html('');
     }
