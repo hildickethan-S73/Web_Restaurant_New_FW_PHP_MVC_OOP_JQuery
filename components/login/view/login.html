@@ -1,0 +1,30 @@
+<div id="login-block" class="login-page">
+    <div class="l-r-form" id="loginform">
+        <form class="register-form" role="form" id="register-form">
+            <input type="text" name="usernameregister" placeholder="username" id="usernameregister" autocomplete="off"/>
+            <input type="password" name="passwordregister" placeholder="password" id="passwordregister" autocomplete="off"/>
+            <input type="password" name="password2register" placeholder="retype password" id="password2register" autocomplete="off"/>
+            <input type="text" name="emailregister" placeholder="email address" id="emailregister"/>
+            <a type="button" class="login-button-r" id="registerbutton">Register</a>
+            <p class="message">Already registered? <a href="#" id="signin">Sign In</a></p>
+        </form>
+
+        <form class="login-form" role="form" id="login-form">
+            <input type="text" name="usernamelogin" placeholder="username" id="usernamelogin" autocomplete="off"/>
+            <input type="password" name="passwordlogin" placeholder="password" id="passwordlogin" autocomplete="off"/>
+            <a type="button" class="login-button-l" id="loginformbutton">Login</a>
+            <p class="message">Forgotten password? <a href="#" id="lostpw">Click here</a></p>
+            <p class="message">Not registered? <a href="#" id="reg">Create an account</a></p>
+        </form>
+    </div>
+</div>
+
+<div id="password-block" class="login-page">
+    <div class="l-r-form" id="lostpwform">    
+        <form class="login-form" role="form" id="lostpw-form">
+            <input type="email" name="emaillostpw" placeholder="email" id="emaillostpw" autocomplete="off"/>
+            <a type="button" class="login-button-l" id="lostpwbutton">Send</a>
+            <p class="message">Input the e-mail that corresponds to the account and we will send you a reset link</p>
+        </form>
+    </div>
+</div>

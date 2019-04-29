@@ -121,7 +121,7 @@ $(document).ready(function () {
 
         if (validate_form(form)){
             $.ajax({
-                url: 'modules/contact/model/contact.php',
+                url: 'api/contact',
                 type: 'POST',
                 data: form,
                 success: function(data){

@@ -87,6 +87,7 @@ class ControllerCore{
             $rows .= $endKey.')';
             $query .= $rows.$values;
         }
+        // error_log(print_r($query,1));
         return $query;
     }
     protected function buildPutQuery($data){

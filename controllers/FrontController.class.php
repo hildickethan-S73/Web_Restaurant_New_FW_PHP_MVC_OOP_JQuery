@@ -21,7 +21,8 @@ class FrontController {
             'restaurants',
             'contact',
             'shop',
-            'details'
+            'details',
+            'login'
         );
         return $allowedPages;
     }
@@ -34,11 +35,21 @@ class FrontController {
         }
     }
 
-    public function run(){
-        $allowedPages=$this->getAllowedPages();
+    private function updateTime($uri){
+        if (isset($_SESSION["user"])) {
+            if (!(isset($uri[2]) && $uri[2] == 'activity-true'))
+                $_SESSION["time"] = time();
+        }
+    }
 
+    public function run(){
+        session_start();
+        $allowedPages=$this->getAllowedPages();
+        
         $this->uri=rtrim($this->uri, '/');
         $cutUrl=explode('/',$this->uri);
+        $this->updateTime($cutUrl);   
+
 
         if (isset($cutUrl[0]) && $cutUrl[0]=='api') {
             if (in_array($cutUrl[1],$allowedPages)){
@@ -54,6 +65,7 @@ class FrontController {
         } else {
             include_once VIEW_PATH_INC . 'top_page.html';
             include_once VIEW_PATH_INC . 'header.html';
+            include_once LOGIN_VIEW_PATH . 'login.html';
 
             if (in_array($this->uri,$allowedPages)){
                 if ($cutUrl[0] == 'details'){

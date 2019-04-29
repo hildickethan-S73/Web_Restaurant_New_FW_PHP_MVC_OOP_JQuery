@@ -1,38 +1,78 @@
 <?php
-function send_email($data, $mailgundata) {
+function send_email($data, $mailgundata,$type) {
     $html = '';
-    $subject = $data['subject'];
-    $message = $data['message'];
-    $name = $data['name'];
-    $address = $data['email'];
-    
     $html .= "<html>";
     $html .= "<body>";
-        $html .= "Name:";
-        $html .= "<br><br>";
-        $html .= $name;
-        $html .= "<br><br>";
+    switch ($type) {
+        case 'contact':
+            $subject = $data['subject'];
+            $message = $data['message'];
+            $name = $data['name'];
+            $address = $data['email'];
+            
+            $html .= "Name: ";
+            $html .= $name;
+            $html .= "<br><br>";
+    
+            $html .= "Subject: ";
+            $html .= "<b>". $subject ."</b>";
+            $html .= "<br><br>";
+    
+            $html .= "Message:";
+            $html .= "<br><br>";
+            $html .= $message;
+            $html .= "<br><br>";
+    
+            $html .= "<p>Sent by ".$address."</p>";
+            $html .= "</body>";
+            $html .= "</html>";
+            try{
+                $result = send_mailgun($mailgundata['email'], $mailgundata['email'], $subject, $html, $mailgundata);    
+            } catch (Exception $e) {
+                $return = 0;
+            }
+            break;
+            
+        case 'recover':
+            $subject = 'Password Recovery';
+            $message = 'We are sending you this message because you requested a password recovery, if this is not you then please contact the site administrator.';
+            $message2 = 'Click on the following link to reset your password';
+            $link = 'pepega';
+            $address = $data;
+            
+            $html .= "Subject: ";
+            $html .= "<b>". $subject ."</b>";
+            $html .= "<br><br>";
+    
+            $html .= "Message:";
+            $html .= "<br><br>";
+            $html .= $message;
+            $html .= "<br>";
+            $html .= $message2;
+            $html .= "<br>";
+            $html .= $link;
+            $html .= "<br><br>";
 
-        $html .= "Subject:";
-        $html .= "<br><br>";
-        $html .= "<h4>". $subject ."</h4>";
-        $html .= "<br><br>";
-
-        $html .= "Message:";
-        $html .= "<br><br>";
-        $html .= $message;
-        $html .= "<br><br>";
-
-        $html .= "<p>Sent by ".$address."</p>";
-    $html .= "</body>";
-    $html .= "</html>";
+            $html .= "</body>";
+            $html .= "</html>";
+            try{
+                $result = send_mailgun($mailgundata['email'], $address, $subject, $html, $mailgundata);    
+            } catch (Exception $e) {
+                $return = 0;
+            }
+            break;
+        
+        default:
+            # code...
+            break;
+    }    
 
     //set_error_handler('ErrorHandler');
-    try{
-        $result = send_mailgun($mailgundata['email'], $mailgundata['email'], $subject, $html, $mailgundata);    
-    } catch (Exception $e) {
-        $return = 0;
-    }
+    // try{
+    //     $result = send_mailgun($mailgundata['email'], $mailgundata['email'], $subject, $html, $mailgundata);    
+    // } catch (Exception $e) {
+    //     $return = 0;
+    // }
     //restore_error_handler();
     return $result;
 }

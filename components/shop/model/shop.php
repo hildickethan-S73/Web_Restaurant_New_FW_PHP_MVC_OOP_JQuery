@@ -1,6 +1,4 @@
 <?php
-session_start();
-
 // to details
 if (isset($_GET['savedetails']) && $_GET['savedetails']){
     $_SESSION['to_details'] = $_POST;
